@@ -1,0 +1,98 @@
+<H3>For up-to-date documentation, please visit:  http://docs.limesurvey.org/tiki-index.php?page=Data+Validation+Code+Architecture</H3>
+
+<h1><a class="pagetitle" title="refresh" accesskey="2" href="tiki-index.php?page=Data+Validation+Code+Architecture">Data Validation Code Architecture</a></h1>
+
+
+
+<div>
+</div>
+<div class="wikitext">
+	Some surveys may require certain criteria be met when answering a question. Examples: &quot;this answer must be an integer between 5 and 10&quot;, &quot;this string must be no more than 12 characters&quot;, &quot;this date must be entered in mm/dd/yyyy format&quot;. For convenience and user feedback, answers will be validated on the client side using the Dojo toolkit when possible. The data, of course, must also be validated on the server side before it is saved to the database. The underlying validation library was developed specifically to support <a class="wiki" href="http://www.limesurvey.org" >LimeSurvey</a> 2.0, and the code architecture is described in a separate wiki page.<br />
+
+	<br />
+	<ul class="toc"><ul><li> <a href='#Overview' class='link'>Overview</a>
+			</li><li> <a href='#Validation_Architecture' class='link'>Validation Architecture</a>
+			</li><li> <a href='#Tie_in_to_Lime_Survey_2_0' class='link'>Tie-in to Lime Survey 2.0</a>
+			</li><li> <a href='#Usage_and_Code_Examples' class='link'>Usage and Code Examples</a>
+			</li></ul></ul>
+			<br />
+			<br />
+			<br />
+
+			<a name='Overview'></a><h2>Overview</h2>
+			The validation code will be written as a separate library which can be used generically to validate data.  The library will be dropped into the Cake &quot;vendors&quot; directory in the Lime Survey 2.0 codebase, where Lime Survey will be able to use it for validation.  The library will be provided with a full set of unit tests using the SimpleTest framework.<br />
+			<br />
+			<a name='Validation_Architecture'></a><h2>Validation Architecture</h2>
+			The validation library, which I've called &quot;ezval&quot;, will consist of:<br />
+			<ul><li>a validator interface,
+				</li><li>some number of validator classes which implement the interface and can be used for validation,
+				</li><li>an EZValidator class which can validate composites of the other types
+
+				</li></ul>
+				<br />
+				<br />
+				The current plan is to only provide the following three classes of validators initially:<br />
+				<ul><li>a regular expression validator (example uses:  email address, floating point number with two decimal places of precision)
+					</li><li>an equivalence expression validator (example uses: an integer less than 5)
+					</li></ul>
+					<br />
+					Some default expressions will be provided, so that a developer may use ezval constants instead of hand-coding their own expressions, which can sometimes be error-prone especially with regular expressions.  The behavior for null or empty values will be configurable, but by default will...<br />
+					<br />
+					<a name='Tie_in_to_Lime_Survey_2_0'></a><h2>Tie-in to Lime Survey 2.0</h2>
+					<br />
+					<a name='Usage_and_Code_Examples'></a><h2>Usage and Code Examples</h2>
+
+					<pre>
+    /******************************************************************
+    /* the following are all valid invocations of validation 
+     ******************************************************************/
+
+    //tests a POSIX-style regular expression
+    $validator = new RegexpValidator();
+    $validator-&gt;validate(&quot;15&quot;, &quot;/^(\+|\-){0,1}[[:digit:]]*$/&quot;); //returns true
+
+    //tests for alphanumeric type using one of the builtin types
+    $validator = new RegExpValidator();
+    $validator-&gt;validate(&quot;this is a test string&quot;, __EZV_ALPHA_NUMERIC_REGEXP); //returns true
+
+    //tests for a valid email using one of the builtin types
+    $validator = new RegExpValidator();
+    $this-&gt;assertTrue($validator-&gt;validate(&quot;jbarkley@mitre.org&quot;, __EZV_EMAIL_REGEXP)); //returns true
+
+    //tests for not equal to
+    $validator = new CompExpValidator();
+    $validator-&gt;validate(&quot;30&quot;, &quot; ! = 31&quot;);  //returns true
+
+    //tests for not equal to
+    $validator = new CompExpValidator();
+    $validator-&gt;validate(&quot;15&quot;, &quot;!= 15.0&quot;); //returns false
+
+    //tests a composite set of criteria, 
+    //a valid is defined as being an integer between +8 and +30
+    $validator-&gt;addCriteria(__EZV_INTEGER_REGEXP);
+    $validator-&gt;addCriteria(&quot;&lt;30&quot;);
+    $validator-&gt;addCriteria(&quot;&gt;8&quot;);
+    $validator-&gt;validate(&quot;15&quot;); // returns true
+    $validator-&gt;validate(&quot;15i&quot;); //returns false
+    $validator-&gt;validate(&quot;30&quot;); //returns false
+
+
+
+</pre><br />
+
+					</div>
+
+					<br style="clear:both" />
+
+
+					<a name="attachments"></a>
+
+					<div id="attzone">
+
+
+
+
+
+
+
+					</div>
